@@ -1,15 +1,19 @@
-const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TerserWebpackPlugin = require("terser-webpack-plugin");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+import path from "path";
+import { fileURLToPath } from "url";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import TerserWebpackPlugin from "terser-webpack-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
 
-module.exports = {
-  entry: "./src/index.js",
+// Получение __dirname в ES-модулях
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
+  entry: "./src/js/index.js",
   output: {
-    filename: "bundle.js",
+    filename: "js/bundle.js",
     path: path.resolve(__dirname, "dist"),
   },
   module: {
@@ -19,6 +23,9 @@ module.exports = {
         use: [
           {
             loader: "file-loader",
+            options: {
+              name: 'images/[name].[hash].[ext]',
+            },
           },
           {
             loader: "image-webpack-loader",
@@ -62,10 +69,11 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: "styles.css",
+      filename: "css/styles.css",
     }),
     new HtmlWebpackPlugin({
-      template: "./src/index.html",
+      template: "./src/barbershop.html",
+      filename: "barbershop.html",
     }),
     new CleanWebpackPlugin(),
   ],
@@ -73,13 +81,21 @@ module.exports = {
     minimize: true,
     minimizer: [
       new TerserWebpackPlugin(),
-      new OptimizeCSSAssetsPlugin(),
       new CssMinimizerPlugin(),
     ],
   },
   devServer: {
-    contentBase: path.join(__dirname, "dist"),
+    static: {
+      directory: path.join(__dirname, "dist"),
+    },
     compress: true,
     port: 9000,
+    hot: true,
+    open: true,
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/$/, to: '/barbershop.html' }
+      ]
+    },
   },
 };
